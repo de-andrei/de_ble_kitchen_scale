@@ -1,0 +1,18 @@
+{
+  "domain": "de_ble_kitchen_scale",
+  "name": "DE BLE Kitchen Scale",
+  "codeowners": ["@de-andrei"],
+  "config_flow": true,
+  "dependencies": ["bluetooth"],
+  "documentation": "https://github.com/de-andrei/de_ble_kitchen_scale",
+  "issue_tracker": "https://github.com/de-andrei/de_ble_kitchen_scale/issues",
+  "integration_type": "device",
+  "bluetooth": [
+    {
+      "service_uuid": "0000ffb0-0000-1000-8000-00805f9b34fb",
+      "connectable": true
+    }
+  ],
+  "requirements": ["bleak>=0.20.2"],
+  "version": "1.0.0"
+}

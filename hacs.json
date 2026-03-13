@@ -1,0 +1,5 @@
+{
+    "name": "DE BLE Kitchen Scale",
+    "render_readme": true,
+    "homeassistant": "2023.8.0"
+}

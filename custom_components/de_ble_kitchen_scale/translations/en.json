@@ -1,0 +1,19 @@
+{
+  "config": {
+    "flow_title": "Kitchen Scale",
+    "step": {
+      "user": {
+        "title": "Select Kitchen Scale",
+        "description": "Choose your KT630LB kitchen scale from the list",
+        "data": {
+          "address": "Device"
+        }
+      }
+    },
+    "abort": {
+      "no_devices_found": "No KT630LB kitchen scales found. Make sure the scale is on and nearby.",
+      "not_supported_device": "This device is not a supported KT630LB kitchen scale",
+      "already_configured": "This scale is already configured"
+    }
+  }
+}
