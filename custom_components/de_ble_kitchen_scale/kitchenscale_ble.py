@@ -6,7 +6,7 @@ from typing import Optional, Callable, Any, Union
 
 from bleak import BleakClient, BleakScanner
 from bleak.backends.device import BLEDevice
-from bleak.exc import BleakError
+from bleak_retry_connector import establish_connection, BleakClientWithServiceCache
 
 # Логгер только для отладки, по умолчанию ничего не выводит
 _LOGGER = logging.getLogger(__name__)
@@ -33,10 +33,11 @@ class KitchenScale:
             self.address = address_or_ble_device
             self.ble_device = None
             
-        self.client: Optional[BleakClient] = None
+        self.client: Optional[BleakClientWithServiceCache] = None
         self._weight: float = 0.0
         self._callback: Optional[Callable[[str, Any], None]] = None
         self._loop = asyncio.get_event_loop()
+        self._disconnect_called = False
         
     def set_callback(self, callback: Callable[[str, Any], None]) -> None:
         """Set callback for data updates."""
@@ -60,12 +61,18 @@ class KitchenScale:
     
     def _disconnected_callback(self, client: BleakClient) -> None:
         """Handle disconnection."""
+        _LOGGER.debug("Scale %s disconnected", self.address)
         self.client = None
-        if self._callback:
+        if self._callback and not self._disconnect_called:
             self._callback("disconnected", None)
     
     async def async_connect(self) -> bool:
         """Connect to scale and enable notifications."""
+        if self.client and self.client.is_connected:
+            return True
+            
+        self._disconnect_called = False
+        
         try:
             if not self.ble_device:
                 # Уменьшаем таймаут сканирования для быстроты
@@ -73,15 +80,20 @@ class KitchenScale:
                     self.address, timeout=3.0
                 )
                 if not self.ble_device:
+                    _LOGGER.debug("Scale %s not found", self.address)
                     return False
             
-            self.client = BleakClient(
-                self.ble_device,
-                disconnected_callback=self._disconnected_callback
-            )
+            _LOGGER.debug("Connecting to scale %s", self.address)
             
-            # Уменьшаем таймаут подключения
-            await self.client.connect(timeout=8.0)
+            # Используем establish_connection из bleak-retry-connector
+            self.client = await establish_connection(
+                BleakClientWithServiceCache,
+                self.ble_device,
+                self.address,
+                self._disconnected_callback,
+                max_attempts=3,
+                use_services_cache=True,
+            )
             
             # Включаем уведомления
             await self.client.start_notify(
@@ -89,17 +101,21 @@ class KitchenScale:
                 self._notification_handler
             )
             
+            _LOGGER.debug("Connected to scale %s", self.address)
+            
             if self._callback:
                 self._callback("connected", None)
             
             return True
             
-        except Exception:
+        except Exception as e:
+            _LOGGER.debug("Connection failed: %s", e)
             self.client = None
             return False
     
     async def async_disconnect(self) -> None:
         """Disconnect from scale."""
+        self._disconnect_called = True
         if self.client and self.client.is_connected:
             try:
                 await self.client.stop_notify(SCALE_WEIGHT_CHAR_UUID)
