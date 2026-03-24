@@ -12,7 +12,7 @@ SCALE_SERVICE_UUID = "0000ffb0-0000-1000-8000-00805f9b34fb"
 SCALE_WEIGHT_CHAR_UUID = "0000ffb2-0000-1000-8000-00805f9b34fb"
 
 # Update intervals
-SCAN_INTERVAL = timedelta(seconds=30)  
+SCAN_INTERVAL = timedelta(seconds=30)
 CONNECT_TIMEOUT = 10
 
 # Packet parsing
