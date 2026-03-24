@@ -13,7 +13,7 @@ SCALE_WEIGHT_CHAR_UUID = "0000ffb2-0000-1000-8000-00805f9b34fb"
 
 # Update intervals
 SCAN_INTERVAL = timedelta(seconds=30)
-CONNECT_TIMEOUT = 10
+CONNECT_TIMEOUT = 13
 
 # Packet parsing
 WEIGHT_PACKET_HEADER = b'\xAC\x40'
